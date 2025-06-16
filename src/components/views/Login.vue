@@ -5,7 +5,6 @@
     <form @submit.prevent="logar">
       <input v-model="email" type="email" placeholder="E-mail" required />
 
-      <!-- Se chave não estiver ativa, mostra o campo de senha -->
       <input
         v-if="!usarChave"
         v-model="senha"
@@ -14,7 +13,6 @@
         required
       />
 
-      <!-- Campo de chave de acesso -->
       <input
         v-if="usarChave"
         v-model="chave"
@@ -23,14 +21,15 @@
         required
       />
 
-      <button type="submit">Entrar</button>
+      <button :disabled="carregando" type="submit">
+        {{ carregando ? 'Entrando...' : 'Entrar' }}
+      </button>
     </form>
 
     <button class="alt-login-btn" @click="ativarChave">
       {{ usarChave ? 'Voltar para login com senha' : 'Entrar com chave de acesso' }}
     </button>
 
-    <p v-if="erro" class="erro-msg">{{ erro }}</p>
     <p v-if="mensagem" class="sucesso-msg">{{ mensagem }}</p>
   </div>
 </template>
@@ -39,52 +38,58 @@
 import { ref } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
+import Swal from 'sweetalert2'
 
 const email = ref('')
 const senha = ref('')
 const chave = ref('')
-const erro = ref('')
 const mensagem = ref('')
 const usarChave = ref(false)
+const carregando = ref(false)
 const router = useRouter()
 
 const ativarChave = async () => {
   usarChave.value = !usarChave.value
-  erro.value = ''
   mensagem.value = ''
 
-  // Quando usuário ativa a chave, pode simular envio da chave por email
   if (usarChave.value && email.value) {
     try {
       await axios.post('https://localhost:7154/api/usuarios/enviar-chave', {
         email: email.value
       })
       mensagem.value = 'Chave de acesso enviada para seu e-mail 📩'
-    } catch (e) {
-      erro.value = 'Erro ao enviar a chave. Verifique o e-mail.'
+    } catch {
+      Swal.fire('Erro', 'Erro ao enviar a chave. Verifique o e-mail.', 'error')
     }
   }
 }
 
 const logar = async () => {
-  erro.value = ''
   mensagem.value = ''
+  carregando.value = true
 
   try {
-    const endpoint = usarChave.value
-      ? 'https://localhost:7154/api/usuarios/login-chave'
-      : 'https://localhost:7154/api/usuarios/login'
+    let response
 
-    const payload = usarChave.value
-      ? { email: email.value, chave: chave.value }
-      : { email: email.value, senha: senha.value }
-
-    const response = await axios.post(endpoint, payload)
+    if (usarChave.value) {
+      response = await axios.post('https://localhost:7154/api/usuarios/login-chave', {
+        email: email.value,
+        chave: chave.value
+      })
+    } else {
+      response = await axios.post('https://localhost:7074/api/login/autenticar', {
+        login: email.value,
+        senha: senha.value
+      })
+    }
 
     localStorage.setItem('usuario', JSON.stringify(response.data))
     router.push('/perfil')
   } catch (e) {
-    erro.value = e.response?.data?.message || 'Falha ao autenticar!'
+    const msg = e.response?.data?.message || 'Falha ao autenticar!'
+    Swal.fire('Erro', msg, 'error')
+  } finally {
+    carregando.value = false
   }
 }
 </script>
@@ -129,7 +134,12 @@ button {
   cursor: pointer;
 }
 
-button:hover {
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+button:hover:not(:disabled) {
   background-color: #22dc7c;
   color: #0c452c;
 }
@@ -146,12 +156,6 @@ button:hover {
 
 .alt-login-btn:hover {
   color: #22dc7c;
-}
-
-.erro-msg {
-  text-align: center;
-  color: red;
-  margin-top: 1rem;
 }
 
 .sucesso-msg {
