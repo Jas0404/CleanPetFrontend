@@ -1,5 +1,3 @@
-// src/router/index.js
-
 import { createRouter, createWebHistory } from 'vue-router'
 
 import Home from '../components/views/Home.vue'
@@ -72,20 +70,31 @@ const router = createRouter({
   routes
 })
 
-// ✅ Proteção da rota do admin
+// ✅ Proteção de rotas
 router.beforeEach((to, from, next) => {
   const usuario = JSON.parse(localStorage.getItem('usuario'))
 
+  // 🔒 Proteção da rota do admin
   if (to.path.startsWith('/admin')) {
-    // Somente email específico pode acessar /admin
     if (usuario && usuario.email === 'admin@cleanpet.com') {
       next()
     } else {
       next('/') // Redireciona para home
     }
-  } else {
-    next()
+    return
   }
+
+  // 🔒 Proteção da rota de perfil
+  if (to.path === '/perfil') {
+    if (usuario) {
+      next()
+    } else {
+      next('/login') // Redireciona para login se não estiver logado
+    }
+    return
+  }
+
+  next()
 })
 
 export default router

@@ -93,12 +93,16 @@
   <span v-if="carrinhoCount > 0" class="badge">{{ carrinhoCount }}</span>
 </router-link>
 
-      <!-- Ícone de perfil com menu -->
-      <div class="nav-icon" v-if="estaLogado">
+     <!-- Ícone de perfil + logout -->
+<div class="nav-icon" v-if="estaLogado">
   <router-link to="/perfil" class="nav-icon" title="Perfil">
     <font-awesome-icon icon="user" />
   </router-link>
+  <button class="logout-btn" @click="logout" title="Sair">
+    <font-awesome-icon icon="sign-out-alt" />
+  </button>
 </div>
+
 
 <!-- Se não estiver logado -->
 <label class="popup nav-icon" title="Entrar" v-else>
@@ -143,22 +147,20 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useUsuario } from '../composables/useUsuario.js'
 
 const termo = ref('')
 const emit = defineEmits(['search'])
-
-const favoritosCount = ref(0)
-const carrinhoCount = ref(0)
-
-const usuario = ref(null)
-const estaLogado = computed(() => !!usuario.value)
-
 const router = useRouter()
 
-// Novo: estado do popup
+// ✅ Pegando os dados do usuário via composable
+const { usuario, estaLogado, logout } = useUsuario()
+
+// Contadores
+const favoritosCount = ref(0)
+const carrinhoCount = ref(0)
 const popupAberto = ref(false)
 
-// Fecha o popup
 function fecharPopup() {
   popupAberto.value = false
   const checkbox = document.querySelector('.popup input[type="checkbox"]')
@@ -173,25 +175,18 @@ const atualizarContadores = () => {
   carrinhoCount.value = carrinho.length
 }
 
-const verificarUsuario = () => {
-  const userData = localStorage.getItem('usuario')
-  usuario.value = userData ? JSON.parse(userData) : null
-}
-
 onMounted(() => {
   atualizarContadores()
-  verificarUsuario()
 
   window.addEventListener('storage', () => {
     atualizarContadores()
-    verificarUsuario()
   })
   window.addEventListener('focus', () => {
     atualizarContadores()
-    verificarUsuario()
   })
 })
 </script>
+
 
 <style scoped>
 .navbar {
@@ -248,13 +243,23 @@ onMounted(() => {
   font-size: 18px;
 }
 
-#poda {
+/* #poda {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   height: 70px;
   margin-left: 1rem;
+} */
+
+#poda {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 70px;
 }
 
 .input::placeholder {
@@ -696,6 +701,19 @@ onMounted(() => {
 
 .popup-window button:hover {
   text-decoration: underline;
+}
+.logout-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+  margin-left: 0.5rem;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.logout-btn:hover {
+  color: #ff5a5f;
 }
 
 </style>

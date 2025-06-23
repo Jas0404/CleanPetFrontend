@@ -34,8 +34,9 @@ const subcategoria = route.params.subcategoria.replace(/-/g, ' ');
 const produtos = ref([]);
 
 onMounted(async () => {
+   console.log("onMounted executado");
   try {
-    const response = await axios.get(`https://localhost:7154/api/produto/${animal}/${categoria}/${subcategoria}`);
+    const response = await axios.get(`https://localhost:7074/api/produtos`);
     produtos.value = response.data;
   } catch (error) {
     console.error("Erro ao buscar produtos:", error);

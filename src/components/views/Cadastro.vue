@@ -34,35 +34,32 @@
       />
 
       <input v-model="email" type="email" placeholder="Seu e-mail" required />
+      <input v-model="login" type="text" placeholder="Seu login" required />
       <input v-model="senha" type="password" placeholder="Senha" required />
       <input v-model="confirmar" type="password" placeholder="Confirmar senha" required />
 
-          <!-- Validação visual da senha -->
-<ul class="senha-requisitos">
-  <li :class="{ ok: senhaRegras.tamanho }">
-    <font-awesome-icon :icon="senhaRegras.tamanho ? 'check-circle' : 'circle'" />
-    Pelo menos 8 caracteres
-  </li>
-  <li :class="{ ok: senhaRegras.maiuscula }">
-    <font-awesome-icon :icon="senhaRegras.maiuscula ? 'check-circle' : 'circle'" />
-    Pelo menos 1 letra maiúscula
-  </li>
-  <li :class="{ ok: senhaRegras.numero }">
-    <font-awesome-icon :icon="senhaRegras.numero ? 'check-circle' : 'circle'" />
-    Pelo menos 1 número
-  </li>
-  <li :class="{ ok: senhaRegras.iguais }">
-    <font-awesome-icon :icon="senhaRegras.iguais ? 'check-circle' : 'circle'" />
-    Senhas iguais
-  </li>
-</ul>
-
+      <!-- Validação visual da senha -->
+      <ul class="senha-requisitos">
+        <li :class="{ ok: senhaRegras.tamanho }">
+          <font-awesome-icon :icon="senhaRegras.tamanho ? 'check-circle' : 'circle'" />
+          Pelo menos 8 caracteres
+        </li>
+        <li :class="{ ok: senhaRegras.maiuscula }">
+          <font-awesome-icon :icon="senhaRegras.maiuscula ? 'check-circle' : 'circle'" />
+          Pelo menos 1 letra maiúscula
+        </li>
+        <li :class="{ ok: senhaRegras.numero }">
+          <font-awesome-icon :icon="senhaRegras.numero ? 'check-circle' : 'circle'" />
+          Pelo menos 1 número
+        </li>
+        <li :class="{ ok: senhaRegras.iguais }">
+          <font-awesome-icon :icon="senhaRegras.iguais ? 'check-circle' : 'circle'" />
+          Senhas iguais
+        </li>
+      </ul>
 
       <button type="submit">Cadastrar</button>
     </form>
-
-    <p v-if="erro" class="erro-msg">{{ erro }}</p>
-    <p v-if="sucesso" class="sucesso-msg">{{ sucesso }}</p>
   </div>
 </template>
 
@@ -70,6 +67,7 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
+import Swal from 'sweetalert2'
 import { maska } from 'vue-the-mask'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
@@ -79,10 +77,9 @@ const cpf = ref('')
 const nascimento = ref('')
 const celular = ref('')
 const email = ref('')
+const login = ref('')
 const senha = ref('')
 const confirmar = ref('')
-const erro = ref('')
-const sucesso = ref('')
 const router = useRouter()
 
 // Regras de senha
@@ -93,7 +90,7 @@ const senhaRegras = computed(() => ({
   iguais: senha.value === confirmar.value && senha.value.length > 0
 }))
 
-// Computa a data mínima permitida (15 anos atrás)
+// Computa a data máxima permitida (15 anos atrás)
 const dataMaxima = computed(() => {
   const hoje = new Date()
   hoje.setFullYear(hoje.getFullYear() - 15)
@@ -111,45 +108,40 @@ const dataFormatada = computed(() => {
   })
 })
 
-
-
-// Cadastro com validação
+// Cadastro com validação e SweetAlert2
 const cadastrar = async () => {
-  erro.value = ''
-  sucesso.value = ''
-
-  // Verificação de idade mínima (já feita pelo input, mas reforçamos)
   const idadeMinima = new Date()
   idadeMinima.setFullYear(idadeMinima.getFullYear() - 15)
 
   if (new Date(nascimento.value) > idadeMinima) {
-    erro.value = 'Você precisa ter no mínimo 15 anos para se cadastrar.'
+    Swal.fire('Aviso', 'Você precisa ter no mínimo 15 anos para se cadastrar.', 'warning')
     return
   }
 
   if (senha.value !== confirmar.value) {
-    erro.value = 'As senhas não coincidem'
+    Swal.fire('Aviso', 'As senhas não coincidem.', 'warning')
     return
   }
 
   try {
-    await axios.post('https://localhost:7154/api/usuarios', {
+    await axios.post('https://localhost:7074/api/usuarios', {
       nome: nome.value,
       cpf: cpf.value,
       nascimento: nascimento.value,
-      celular: celular.value,
+      NumCelular: celular.value,
       email: email.value,
-      senha: senha.value
+      senha: senha.value,
+      Login: login.value,
     })
 
-    sucesso.value = 'Usuário cadastrado com sucesso! Redirecionando para o login...'
+    Swal.fire('Sucesso', 'Usuário cadastrado com sucesso! Redirecionando para o login...', 'success')
 
     setTimeout(() => {
       router.push('/login')
     }, 2000)
 
   } catch (e) {
-    erro.value = e.response?.data?.message || 'Erro ao cadastrar. Tente novamente.'
+    Swal.fire('Erro', e.response?.data?.message || 'Erro ao cadastrar. Tente novamente.', 'error')
   }
 }
 </script>
@@ -222,17 +214,6 @@ button:hover {
   color: #0c452c;
 }
 
-.erro-msg {
-  color: red;
-  margin-top: 1rem;
-  text-align: center;
-}
-
-.sucesso-msg {
-  color: green;
-  margin-top: 1rem;
-  text-align: center;
-}
 .senha-requisitos {
   list-style: none;
   padding: 0.5rem 0 1rem;
@@ -254,5 +235,4 @@ button:hover {
   color: #0c452c;
   font-weight: 600;
 }
-
 </style>

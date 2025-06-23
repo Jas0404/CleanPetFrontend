@@ -61,15 +61,11 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
 
 const router = useRouter()
 
-const servicos = ref([
-  { nome: 'Banho e Tosa', descricao: 'Cuidado completo para o seu pet 🛁🐶', imagem: '/serviços/tosa.jpg' },
-  { nome: 'Veterinário', descricao: 'Consultas com especialistas 💉🐾', imagem: '/serviços/vet.jpg' },
-  { nome: 'Hospedagem', descricao: 'Conforto e segurança enquanto você viaja 🏨🐶', imagem: "/serviços/hotel.jpg" }
-])
-
+const servicos = ref([])
 const pets = ref([])
 const modalAberto = ref(false)
 const servicoSelecionado = ref({})
@@ -104,9 +100,17 @@ function confirmarAgendamento() {
   router.push('/agenda')
 }
 
-onMounted(() => {
+onMounted(async () => {
+  try {
+    const response = await axios.get('https://localhost:7074/api/servicos')
+    servicos.value = response.data
+  } catch (error) {
+    console.error('Erro ao carregar serviços:', error)
+  }
+
   pets.value = JSON.parse(localStorage.getItem('pets') || '[]')
 })
+
 </script>
 
 <style scoped>
