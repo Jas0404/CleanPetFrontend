@@ -3,7 +3,7 @@
     <h1>Login</h1>
 
     <form @submit.prevent="logar">
-      <input v-model="email" type="email" placeholder="E-mail" required />
+      <input v-model="email" type="text" placeholder="Login" required />
 
       <input
         v-if="!usarChave"
@@ -54,7 +54,7 @@ const ativarChave = async () => {
 
   if (usarChave.value && email.value) {
     try {
-      await axios.post('https://localhost:7154/api/usuarios/enviar-chave', {
+      await axios.post('https://localhost:7074/api/usuarios/enviar-chave', {
         email: email.value
       })
       mensagem.value = 'Chave de acesso enviada para seu e-mail 📩'
@@ -72,7 +72,7 @@ const logar = async () => {
     let response
 
     if (usarChave.value) {
-      response = await axios.post('https://localhost:7154/api/usuarios/login-chave', {
+      response = await axios.post('https://localhost:7074/api/usuarios/login-chave', {
         email: email.value,
         chave: chave.value
       })
