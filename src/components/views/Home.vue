@@ -36,10 +36,10 @@
     <section class="offers">
       <h2>Ofertas Especiais 🛍️</h2>
       <div class="offer-list">
-        <div class="offer" v-for="offer in offers" :key="offer.name">
-          <img :src="offer.img" />
-          <p>{{ offer.name }}</p>
-          <strong>{{ offer.price }}</strong>
+        <div class="offer" v-for="offer in offers" :key="offer.id">
+          <img :src="offer.imagem" />
+          <p>{{ offer.nome }}</p>
+          <strong> R$ {{ offer.preco }}</strong>
         </div>
       </div>
     </section>
@@ -102,17 +102,29 @@
 </template>
 
 <script setup>
+import axios from 'axios'
+import Swal from 'sweetalert2'
 import { ref, onMounted, onUnmounted } from 'vue'
 
 const images = ['Banners/banner1.png', 'Banners/banner2.jpg']
 const current = ref(0)
 
-onMounted(() => {
+const offers = ref([]) 
+
+onMounted(async () => {
   setInterval(() => {
     current.value = (current.value + 1) % images.length
   }, 3000)
 
   window.addEventListener('scroll', onScroll)
+
+   try {
+    const response = await axios.get('https://localhost:7074/api/produtos')
+    offers.value = response.data
+  } catch (error) {
+    console.error('Erro ao buscar produtos:', error)
+    Swal.fire('Erro', 'Erro ao carregar os produtos!', 'error')
+  }
 })
 
 onUnmounted(() => {
@@ -143,11 +155,11 @@ const categories = [
   { name: 'Piscina', slug: 'piscina', icon: 'water' }
 ]
 
-const offers = [
-  { name: 'Ração Premium 10kg', price: 'R$ 129,90', img: '/produtos/racao1.jpg' },
-  { name: 'Areia para gatos', price: 'R$ 39,90', img: '/produtos/areia.jpg' },
-  { name: 'Brinquedo Mordedor', price: 'R$ 19,90', img: '/produtos/brinquedo.jpg' }
-]
+// const offers = [
+//   { name: 'Ração Premium 10kg', price: 'R$ 129,90', img: '/produtos/racao1.jpg' },
+//   { name: 'Areia para gatos', price: 'R$ 39,90', img: '/produtos/areia.jpg' },
+//   { name: 'Brinquedo Mordedor', price: 'R$ 19,90', img: '/produtos/brinquedo.jpg' }
+// ]
 
 const destaques = [
   { nome: 'Coleira personalizada', desc: 'Conforto e estilo.', img: '/produtos/coleira.jpg' },
