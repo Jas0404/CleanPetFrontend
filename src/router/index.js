@@ -29,7 +29,12 @@ const routes = [
     component: () => import('../components/views/TodasCategorias.vue')
   },
   {
-    path: '/produtos/:animal/:categoria/:subcategoria',
+    path: '/produtos/:categoria/:subcategoria',
+    name: 'Produtos',
+    component: Produtos
+  },
+  {
+    path: '/produtos/:idcategoria',
     name: 'Produtos',
     component: Produtos
   },

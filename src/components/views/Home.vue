@@ -22,12 +22,12 @@
       <div class="category-list">
         <router-link
           v-for="cat in categories"
-          :key="cat.name"
-          :to="`/produtos/${cat.slug}`"
+          :key="cat.id"
+          :to="`/produtos/${cat.id}`"
           class="category"
         >
-          <font-awesome-icon :icon="['fas', cat.icon]" class="category-icon" />
-          <span>{{ cat.name }}</span>
+          <font-awesome-icon :icon="['fas', cat.icone]" class="category-icon" />
+          <span>{{ cat.nome }}</span>
         </router-link>
       </div>
     </section>
@@ -110,6 +110,7 @@ const images = ['Banners/banner1.png', 'Banners/banner2.jpg']
 const current = ref(0)
 
 const offers = ref([]) 
+const categories = ref([]) 
 
 onMounted(async () => {
   setInterval(() => {
@@ -124,6 +125,14 @@ onMounted(async () => {
   } catch (error) {
     console.error('Erro ao buscar produtos:', error)
     Swal.fire('Erro', 'Erro ao carregar os produtos!', 'error')
+  }
+
+  try {
+    const response = await axios.get('https://localhost:7074/api/categorias')
+    categories.value = response.data
+  } catch (error) {
+    console.error('Erro ao buscar categorias:', error)
+    Swal.fire('Erro', 'Erro ao carregar os categorias!', 'error')
   }
 })
 
@@ -145,15 +154,15 @@ const benefits = [
   { icon: '/entrega.png', text: 'Entrega rápida' }
 ]
 
-const categories = [
-  { name: 'Cães', slug: 'caes', icon: 'dog' },
-  { name: 'Gatos', slug: 'gatos', icon: 'cat' },
-  { name: 'Aves', slug: 'aves', icon: 'dove' },
-  { name: 'Peixes', slug: 'peixes', icon: 'fish' },
-  { name: 'Casa', slug: 'casa', icon: 'house-user' },
-  { name: 'Jardim', slug: 'jardim', icon: 'tree' },
-  { name: 'Piscina', slug: 'piscina', icon: 'water' }
-]
+// const categories = [
+//   { name: 'Cães', slug: 'caes', icon: 'dog' },
+//   { name: 'Gatos', slug: 'gatos', icon: 'cat' },
+//   { name: 'Aves', slug: 'aves', icon: 'dove' },
+//   { name: 'Peixes', slug: 'peixes', icon: 'fish' },
+//   { name: 'Casa', slug: 'casa', icon: 'house-user' },
+//   { name: 'Jardim', slug: 'jardim', icon: 'tree' },
+//   { name: 'Piscina', slug: 'piscina', icon: 'water' }
+// ]
 
 // const offers = [
 //   { name: 'Ração Premium 10kg', price: 'R$ 129,90', img: '/produtos/racao1.jpg' },
