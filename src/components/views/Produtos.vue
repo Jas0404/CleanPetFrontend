@@ -48,6 +48,8 @@ const categoria = route.params.idcategoria
 const produtos = ref([])
 const servicos = ref([])
 
+const dadosUsuarioLogado = JSON.parse(localStorage.getItem('usuario')); 
+
 onMounted(async () => {
   try {
     const produtosResponse = await axios.get(
@@ -89,18 +91,29 @@ const isFavorito = (produtoId) => {
   return favoritos.some((p) => p.id === produtoId)
 }
 
-const adicionarAoCarrinho = (servico) => {
-  const carrinho = JSON.parse(localStorage.getItem('carrinho')) || []
-  carrinho.push(servico)
-  localStorage.setItem('carrinho', JSON.stringify(carrinho))
+const adicionarAoCarrinho = async (servico) => {
+  console.log(servico);
 
-  Swal.fire({
+  const novoItem = {
+  usuarioId: dadosUsuarioLogado.id,
+  produtoId: servico.id,
+  quantidade: 1
+}
+
+ try {
+  const response = await axios.post('https://localhost:7074/api/carrinhoitem', novoItem);
+
+    Swal.fire({
     title: 'Adicionado!',
     text: `${servico.nome} foi adicionado ao carrinho.`,
     icon: 'success',
     timer: 1200,
     showConfirmButton: false,
   })
+  
+} catch (error) {
+  console.error('Erro ao adicionar item ao carrinho:', error)
+}
 
   window.dispatchEvent(new Event('storage'))
 }

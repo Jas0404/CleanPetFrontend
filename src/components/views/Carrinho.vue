@@ -9,10 +9,11 @@
     <div v-else class="lista-itens">
       <ul>
         <li v-for="item in carrinho" :key="item.id">
-          <img :src="item.imagem" alt="produto" />
+          <img :src="item.produto.imagem" alt="produto" />
           <div class="info">
-            <span class="nome">{{ item.nome }}</span>
-            <span class="preco">R$ {{ item.preco }}</span>
+            <span class="nome">{{ item.produto.nome }}</span>
+            <span class="preco">Quantidade: {{ item.quantidade }}</span>
+            <span class="preco">R$ {{ item.precoUnitario }}</span>
           </div>
           <button @click="remover(item.id)">❌</button>
         </li>
@@ -28,6 +29,8 @@ import axios from 'axios'
 
 const carrinho = ref([])
 
+const dadosUsuarioLogado = JSON.parse(localStorage.getItem('usuario')); 
+
 const token = localStorage.getItem('token')
 
 const api = axios.create({
@@ -38,15 +41,13 @@ const api = axios.create({
 })
 
 const total = computed(() =>
-  carrinho.value.reduce((acc, item) => acc + item.preco, 0)
+ carrinho.value.reduce((acc, item) => acc + item.precoUnitario * item.quantidade, 0)
 )
 
 async function carregarCarrinho() {
   try {
-    //const response = await api.get('CarrinhoItem')
-    //carrinho.value = localStorage.getItem('carrinho') //response.data
-    const carrinhoSalvo = localStorage.getItem('carrinho')
-    carrinho.value = carrinhoSalvo ? JSON.parse(carrinhoSalvo) : []
+    const response = await api.get(`https://localhost:7074/api/CarrinhoItem/usuario/${dadosUsuarioLogado.id}`);
+    carrinho.value = response.data
   } catch (error) {
     console.error('Erro ao carregar carrinho:', error)
   }
