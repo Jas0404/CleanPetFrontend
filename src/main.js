@@ -14,7 +14,7 @@ import {
   faUser, faHeart, faShoppingBag, faSignInAlt, faUserPlus,
   faArrowUp, faHouseUser, faTree, faWater, faThLarge,
   faDog, faCat, faDove, faFish, faPaw, faOtter, faHippo,
-  faBriefcaseMedical, faCalendarAlt
+  faBriefcaseMedical, faCalendarAlt, faCamera
 } from '@fortawesome/free-solid-svg-icons'
 import {
   faWhatsapp, faFacebook, faInstagram, faTiktok
@@ -28,7 +28,7 @@ library.add(
   faUser, faHeart, faShoppingBag, faSignInAlt, faUserPlus,
   faArrowUp, faHouseUser, faTree, faWater, faThLarge,
   faDog, faCat, faDove, faFish, faPaw, faOtter, faHippo,
-  faBriefcaseMedical, faCalendarAlt,
+  faBriefcaseMedical, faCalendarAlt, faCamera,
   faWhatsapp, faFacebook, faInstagram, faTiktok
 )
 
