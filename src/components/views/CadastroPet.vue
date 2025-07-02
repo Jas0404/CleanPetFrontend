@@ -12,7 +12,7 @@
             <img :src="fotoPreview" alt="Foto do pet" />
           </div>
           <div class="foto-placeholder" v-else>
-            <font-awesome-icon icon="camera" />
+            <font-awesome-icon :icon="['fas', 'camera']" />
             <p>Adicionar Foto</p>
           </div>
         </label>
@@ -26,61 +26,55 @@
             v-for="opcao in especies"
             :key="opcao.nome"
             :class="['especie-card-img', { ativa: form.especie === opcao.nome }]"
-            @click="form.especie = opcao.nome"
+            @click="form.especie = opcao.id"
           >
-            <img :src="opcao.imagem" :alt="opcao.nome" />
+            <img :src="opcao.imagem" :alt="opcao.imagem" />
             <span>{{ opcao.nome }}</span>
           </div>
         </div>
       </section>
 
-  <!-- Campos de dados -->
-<section class="form-grid">
-  <input v-model="form.nome" type="text" placeholder="Nome do Pet" required />
+      <!-- Campos de dados -->
+      <section class="form-grid">
+        <input v-model="form.nome" type="text" placeholder="Nome do Pet" required />
 
-<!-- Raça com preview -->
-<div class="raca-select">
-  <select
-    v-model="form.raca"
-    :disabled="!form.especie"
-    :class="{ desabilitado: !form.especie }"
-  >
-    <option disabled value="">
-      {{ form.especie ? 'Selecione a raça' : 'Escolha uma espécie' }}
-    </option>
-    <option
-      v-for="r in racasDisponiveis"
-      :key="r.nome"
-      :value="r.nome"
-    >
-      {{ r.nome }}
-    </option>
-  </select>
+        <!-- Raça com preview -->
+        <div class="raca-select">
+          <select
+            v-model="form.raca"
+            :disabled="!form.especie"
+            :class="{ desabilitado: !form.especie }"
+          >
+            <option disabled value="">
+              {{ form.especie ? 'Selecione a raça' : 'Escolha uma espécie' }}
+            </option>
+            <option v-for="r in racasDisponiveis" :key="r.nome" :value="r.nome">
+              {{ r.nome }}
+            </option>
+          </select>
 
-  <!-- Exibe ícone se houver raça selecionada -->
-  <div class="raca-preview" v-if="form.raca">
-    <img
-      v-if="racasDisponiveis.find(r => r.nome === form.raca)?.icon"
-      :src="racasDisponiveis.find(r => r.nome === form.raca).icon"
-      :alt="form.raca"
-    />
-  </div>
-</div>
+          <!-- Exibe ícone se houver raça selecionada -->
+          <div class="raca-preview" v-if="form.raca">
+            <img
+              v-if="racasDisponiveis.find(r => r.nome === form.raca)?.icon"
+              :src="racasDisponiveis.find(r => r.nome === form.raca).icon"
+              :alt="form.raca"
+            />
+          </div>
+        </div>
 
-
-  <input v-model="form.idade" type="number" placeholder="Idade (anos)" min="0" />
-  <input v-model="form.peso" type="number" placeholder="Peso (kg)" step="0.1" min="0" />
-  <input v-model="form.tamanho" type="number" placeholder="Altura (cm)" step="1" min="0" />
-  <input v-model="form.cor" type="text" placeholder="Cor do Pelo" />
-  <select v-model="form.pelo">
-    <option disabled value="">Tamanho do Pelo</option>
-    <option>Curto</option>
-    <option>Médio</option>
-    <option>Longo</option>
-    <option>Sem pelo</option>
-  </select>
-</section>
-
+        <input v-model="form.idade" type="number" placeholder="Idade (anos)" min="0" />
+        <input v-model="form.peso" type="number" placeholder="Peso (kg)" step="0.1" min="0" />
+        <input v-model="form.tamanho" type="number" placeholder="Altura (cm)" step="1" min="0" />
+        <input v-model="form.cor" type="text" placeholder="Cor do Pelo" />
+        <select v-model="form.pelo">
+          <option disabled value="">Tamanho do Pelo</option>
+          <option>Curto</option>
+          <option>Médio</option>
+          <option>Longo</option>
+          <option>Sem pelo</option>
+        </select>
+      </section>
 
       <!-- Observações -->
       <textarea v-model="form.obs" rows="4" placeholder="Observações (opcional)" />
@@ -92,7 +86,9 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
+import axios from 'axios'
+import Swal from 'sweetalert2'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 const form = ref({
@@ -118,81 +114,44 @@ const previewFoto = (event) => {
   }
 }
 
-const especies = [
-  { nome: 'Cão', imagem: '/especies/cao.png' },
-  { nome: 'Gato', imagem: '/especies/gato.png' },
-  { nome: 'Coelho', imagem: '/especies/coelho.png' },
-  { nome: 'Porquinho-da-índia', imagem: '/especies/porquinho.png' },
-  { nome: 'Furão', imagem: '/especies/furao.png' }
-]
+const especies = ref([])
+const racasPorEspecie = ref([])
 
-const racasPorEspecie = {
-  Cão: [
-    { nome: 'Poodle' },
-    { nome: 'Labrador' },
-    { nome: 'Bulldog' },
-    { nome: 'Shih-tzu' },
-    { nome: 'Beagle' },
-    { nome: 'Poodle'},
-    { nome: 'Husky siberiano' },
-    { nome: 'Chihuahua' },
-    { nome: 'Border collie' },
-    { nome: 'Sem raça definida (SRD)'}
-
-  ],
-  Gato: [
-    { nome: 'Siamês' },
-    { nome: 'Persa' },
-    { nome: 'Maine Coon'},
-    { nome: 'Sphynx' },
-    { nome: 'Ragdoll' },
-    { nome: 'Abissínio'},
-    { nome: 'Birmanês' },
-    { nome: 'Bombaim' },
-    { nome: 'Angorá' },
-    { nome: 'Sem raça definida (SRD)' }
-  ],
-  Coelho: [
-    { nome: 'Mini Lop' },
-    { nome: 'Angorá' },
-    { nome: 'Lionhead' },
-    { nome: 'Gigante de Flandres' },
-    { nome: 'Rex' },
-    { nome: 'Mini rex'},
-    { nome: 'Holandesa' },
-    { nome: 'Polonês' },
-    { nome: 'Thrianta' },
-    { nome: 'Sem raça definida (Mestiços)' }
-  ],
-  'Porquinho-da-índia': [
-    { nome: 'Abyssinian' },
-    { nome: 'Peruano' },
-    { nome: 'Americano'},
-    { nome: 'Skinny Pig' },
-    { nome: 'Teddy' },
-    { nome: 'Inglês' },
-    { nome: 'Sheltie' },
-    { nome: 'Rex'},
-    { nome: 'Coronet' },
-    { nome: 'Sem raça definida (Mestiços)' }
-  ],
-  Furão: [
-    { nome: 'Standard'},
-    { nome: 'Albino'},
-    { nome: 'Cinnamon' }
-  ]
-}
-
-const racasDisponiveis = computed(() => {
-  return racasPorEspecie[form.value.especie] || []
+onMounted(async () => {
+  try {
+    const response = await axios.get('https://localhost:7074/api/animal')
+    especies.value = response.data
+  } catch (error) {
+    console.error('Erro ao buscar espécies:', error)
+    Swal.fire('Erro', 'Erro ao carregar as espécies!', 'error')
+  }
 })
+
+// 🔁 Sempre que a espécie mudar, busca as raças dela
+watch(() => form.value.especie, async (novaEspecie) => {
+  console.log(form.value)
+  if (novaEspecie) {
+    try {
+      const response = await axios.get(`https://localhost:7074/api/raca/por-animal/${novaEspecie}`)
+      racasPorEspecie.value = response.data
+      form.value.raca = '' // limpa seleção anterior
+    } catch (error) {
+      console.error('Erro ao buscar raças:', error)
+      Swal.fire('Erro', 'Erro ao carregar as raças!', 'error')
+    }
+  } else {
+    racasPorEspecie.value = []
+    form.value.raca = ''
+  }
+})
+
+const racasDisponiveis = computed(() => racasPorEspecie.value)
 
 const salvarPet = () => {
   console.log('🐾 Pet cadastrado com sucesso:', form.value)
   alert(`Pet ${form.value.nome} cadastrado com sucesso! 🐾`)
 }
 </script>
-
 
 <style scoped>
 .cadastro-container {
